@@ -1,0 +1,26 @@
+appId: com.flyffbind.app
+productName: FlyffBind
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**/*
+  - package.json
+extraResources:
+  - from: resources/ahk
+    to: ahk
+# Only ship the English Chromium language pack (the UI is English); saves ~40 MB.
+electronLanguages:
+  - en-US
+compression: maximum
+win:
+  target:
+    - nsis
+    - portable
+  requestedExecutionLevel: requireAdministrator
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  differentialPackage: false
+portable:
+  artifactName: FlyffBind-${version}-portable.exe

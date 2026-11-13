@@ -1,0 +1,14 @@
+node_modules/
+out/
+dist/
+# Saved profiles (Documents\FlyffBind\Profiles is also this project folder on the dev PC)
+Profiles/
+# Local tool output / editor + assistant settings
+tools/browser-test/results.txt
+.claude/
+*.log
+.env*
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

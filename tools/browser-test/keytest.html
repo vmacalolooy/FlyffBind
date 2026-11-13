@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>KT||0</title></head>
+<body style="margin:0;background:#0b1a2a;color:#fff;font:22px 'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center">
+<div>
+  <p><b>FlyffBind browser test</b><br>Please don't touch the mouse or keyboard.</p>
+  <p id="k" style="font-size:40px;letter-spacing:4px">&nbsp;</p>
+</div>
+<script>
+  // Window title format: KT|<keys>|<frames>
+  //   keys:  each key received, prefixed ^ ! + if the page saw Ctrl/Alt/Shift held,
+  //          followed by * if the page handled it while hidden (covered/minimized).
+  //   frames: animation frames rendered so far (stops growing when the browser pauses the page).
+  let keys = ''
+  let frames = 0
+  const show = () => {
+    document.title = 'KT|' + keys.slice(-30) + '|' + frames
+    document.getElementById('k').textContent = keys.slice(-30) || ' '
+  }
+  window.addEventListener('keydown', (e) => {
+    keys += (e.ctrlKey ? '^' : '') + (e.altKey ? '!' : '') + (e.shiftKey ? '+' : '') + e.key + (document.hidden ? '*' : '')
+    show()
+  }, true)
+  const tick = () => { frames++; requestAnimationFrame(tick) }
+  requestAnimationFrame(tick)
+  setInterval(show, 200)
+</script>
+</body>
+</html>
