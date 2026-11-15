@@ -1,4 +1,4 @@
-; FlyffBind mouse recorder.
+; BINDit mouse recorder.
 ; Records cursor movement and button presses (which still go through to the screen)
 ; until Esc is pressed, then prints one step per line to stdout:
 ;   <type>,<button>,<x>,<y>,<ms since previous step>

@@ -13,6 +13,6 @@ for (const name of fs.readdirSync(dist)) {
   try {
     fs.rmSync(path.join(dist, name), { recursive: true, force: true })
   } catch (e) {
-    console.warn(`Could not remove dist/${name} (is FlyffBind running from it?): ${e.message}`)
+    console.warn(`Could not remove dist/${name} (is BINDit running from it?): ${e.message}`)
   }
 }

@@ -1,5 +1,5 @@
 appId: com.flyffbind.app
-productName: FlyffBind
+productName: BINDit
 directories:
   buildResources: build
   output: dist
@@ -23,4 +23,4 @@ nsis:
   allowToChangeInstallationDirectory: true
   differentialPackage: false
 portable:
-  artifactName: FlyffBind-${version}-portable.exe
+  artifactName: BINDit-${version}-portable.exe

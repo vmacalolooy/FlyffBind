@@ -16,6 +16,8 @@ interface Props {
   onChangeHotkey: () => void
   onChangeType: () => void
   onRecordKeys: (actionId: string) => void
+  /** first row: the guided tour points here */
+  tourAnchor?: boolean
 }
 
 function summary(m: Macro, windows: GameWindow[]): string {
@@ -28,14 +30,14 @@ function summary(m: Macro, windows: GameWindow[]): string {
   return names.length ? names.join(', ') : 'No windows'
 }
 
-export function MacroRow({ macro: m, windows, conflict, update, onDelete, onRename, onChangeHotkey, onChangeType, onRecordKeys }: Props) {
+export function MacroRow({ macro: m, windows, conflict, update, onDelete, onRename, onChangeHotkey, onChangeType, onRecordKeys, tourAnchor }: Props) {
   const TypeIcon = TYPE_ICON[m.type]
   const KindIcon = m.kind === 'keys' ? Keyboard : m.mouse.mode === 'recorded' ? MousePointer2 : MousePointerClick
   const open = !m.collapsed
   const set = (patch: Partial<Macro>) => update((x) => ({ ...x, ...patch }))
 
   return (
-    <div className={`rounded-lg transition ${open ? 'bg-tile' : 'bg-tile/70 hover:bg-tile'} ${m.enabled ? '' : 'opacity-50'}`}>
+    <div data-tour={tourAnchor ? 'macro' : undefined} className={`rounded-lg transition-[background-color,opacity,box-shadow] duration-200 ${open ? 'bg-tile shadow-[inset_0_0_0_1px_rgba(255,255,255,.06)]' : 'lift bg-tile/70 hover:bg-tile'} ${m.enabled ? '' : 'opacity-50'}`}>
       {/* Header row */}
       <div className="flex cursor-pointer items-center gap-3 px-4 py-3" onClick={() => set({ collapsed: !m.collapsed })}>
         <KindIcon size={16} className="shrink-0 text-muted" />
@@ -45,7 +47,7 @@ export function MacroRow({ macro: m, windows, conflict, update, onDelete, onRena
             e.stopPropagation()
             onChangeHotkey()
           }}
-          className={`kbd min-w-[46px] justify-center py-1 transition hover:ring-1 hover:ring-accent ${conflict ? 'text-amber-400 ring-1 ring-amber-500/60' : 'text-accent'}`}
+          className={`kbd min-w-[46px] justify-center py-1 hover:ring-1 hover:ring-accent ${conflict ? 'text-amber-400 ring-1 ring-amber-500/60' : 'text-accent'}`}
         >
           {keyLabel(m.hotkey)}
         </button>
@@ -67,13 +69,13 @@ export function MacroRow({ macro: m, windows, conflict, update, onDelete, onRena
               { label: 'Delete', icon: Trash2, onClick: onDelete, danger: true }
             ]}
           />
-          <ChevronDown size={16} className={`text-muted transition ${open ? 'rotate-180' : ''}`} onClick={() => set({ collapsed: !m.collapsed })} />
+          <ChevronDown size={16} className={`chev cursor-pointer text-muted hover:text-zinc-100 ${open ? 'rotate-180' : ''}`} onClick={() => set({ collapsed: !m.collapsed })} />
         </div>
       </div>
 
       {/* Editor */}
       {open && (
-        <div className="space-y-4 px-4 pb-4">
+        <div className="expand space-y-4 px-4 pb-4">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-line pt-3">
             <span className="label">{m.kind === 'keys' ? 'Keystrokes' : MOUSE_MODE_LABEL[m.mouse.mode]}</span>
             <Segmented

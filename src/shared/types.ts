@@ -105,7 +105,7 @@ export interface RecordResult {
 }
 
 export interface ExportFile {
-  format: 'flyffbind'
+  format: 'bindit' | 'flyffbind'
   version: 1
   profile: Profile
 }

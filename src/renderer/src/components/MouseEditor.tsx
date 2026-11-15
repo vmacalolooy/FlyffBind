@@ -49,7 +49,7 @@ function RecordedPath({ macro: m, update }: { macro: Macro; update: Update }) {
           <Circle size={12} fill="currentColor" /> Record path
         </Button>
         <p className="text-xs leading-relaxed text-muted">
-          FlyffBind hides itself and records your mouse. Move and click as you want it replayed, then press <span className="kbd">Esc</span> to finish.
+          BINDit hides itself and records your mouse. Move and click as you want it replayed, then press <span className="kbd">Esc</span> to finish.
         </p>
       </div>
     )
@@ -162,7 +162,7 @@ function ClickPoints({ macro: m, update }: { macro: Macro; update: Update }) {
         <Button size="sm" variant="ghost" onClick={() => pick(null, 'move')}>
           <Move size={13} /> Add move
         </Button>
-        {steps.length === 0 && <span className="text-xs text-muted">FlyffBind hides — click the spot on screen to add it.</span>}
+        {steps.length === 0 && <span className="text-xs text-muted">BINDit hides — click the spot on screen to add it.</span>}
       </div>
     </div>
   )

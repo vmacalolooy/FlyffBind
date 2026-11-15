@@ -17,7 +17,7 @@ export function installMockApi() {
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
   let nextPid = 14200
   const api: Api = {
-    loadProfiles: async () => ({ profiles: [...profiles.values()], activeId: d.id, folder: 'Documents\\FlyffBind\\Profiles' }),
+    loadProfiles: async () => ({ profiles: [...profiles.values()], activeId: d.id, folder: 'Documents\\BINDit\\Profiles' }),
     openProfilesFolder: async () => '',
     onProfilesChanged: () => () => {},
     saveProfile: async (p) => (profiles.set(p.id, p), p),

@@ -1,9 +1,13 @@
-# FlyffBind
+# BINDit
 
-Control several Flyff Universe accounts (one Firefox profile each) from one keyboard. FlyffBind sends key presses to background Firefox windows by PID (AutoHotkey `ControlSend`), so you never have to switch windows. It can also play back mouse moves and clicks.
+Control several Flyff Universe accounts (one Firefox profile each) from one keyboard. BINDit sends key presses to background Firefox windows by PID (AutoHotkey `ControlSend`), so you never have to switch windows. It can also play back mouse moves and clicks.
+
+BINDit was previously called **FlyffBind**. On first launch it copies your old profiles and settings over automatically; old `.flyffbind` files still open.
+
+New here? Click **Show me around** (bottom left) for a step-by-step guided tour.
 
 ## Using it
-1. **Profiles** (left sidebar): **Default** is a scratch space. Click **Save as…** to keep a setup as its own named profile. Named profiles show an amber dot when they have unsaved changes; use **Save** (Ctrl+S) or **Discard**. Each profile's ⋯ menu has rename, duplicate, **Export / share** and delete. Friends load a shared `.flyffbind` file with **Import** (folder icon).
+1. **Profiles** (left sidebar): **Default** is a scratch space. Click **Save as…** to keep a setup as its own named profile. Named profiles show an amber dot when they have unsaved changes; use **Save** (Ctrl+S) or **Discard**. Each profile's ⋯ menu has rename, duplicate, **Export / share** and delete. Friends load a shared `.bindit` file with **Import** (folder icon).
 2. **Windows**: add one per account (e.g. Templar, Seraph, DPS), click **Link** and then click that Firefox window. Its PID is captured automatically. PIDs change whenever Firefox restarts, so **Re-link** when a tile turns red.
 3. **Macros**: **Add macro**, then:
    1. **Trigger**: press the key. Mouse 4/5 and middle click work too.
@@ -16,9 +20,9 @@ Control several Flyff Universe accounts (one Firefox profile each) from one keyb
 4. **Start / Stop**: press **Start**, or set a **Start / Stop key** and press it in game. Both do the same thing. Edits apply live, even before you save.
 
 Where profiles are stored
-- Saved profiles are stored as one file each in **`Documents\FlyffBind\Profiles\<Name>.flyffbind`**. Every file in that folder appears in the app automatically, even while it's running. The folder icon in the sidebar opens it.
-- These files are shareable as-is. Linked-window PIDs are kept separately in `%APPDATA%\FlyffBind\window-links.json`, so a friend never receives your PIDs.
-- The scratch **Default** profile lives in `%APPDATA%\FlyffBind\default.flyffbind`.
+- Saved profiles are stored as one file each in **`Documents\BINDit\Profiles\<Name>.bindit`**. Every file in that folder appears in the app automatically, even while it's running. The folder icon in the sidebar opens it.
+- These files are shareable as-is. Linked-window PIDs are kept separately in `%APPDATA%\BINDit\window-links.json`, so a friend never receives your PIDs.
+- The scratch **Default** profile lives in `%APPDATA%\BINDit\default.bindit`.
 
 Notes
 - Each account needs its **own Firefox profile** (`firefox -P`). Windows from the same profile share one PID.
@@ -36,6 +40,6 @@ MIT, see `LICENSE`. The bundled AutoHotkey runtime is GPL v2.
 npm install
 npm run dev       # run the app
 npm test          # AHK generator unit tests
-npm run dist      # build dist/FlyffBind Setup x.y.z.exe and the portable exe
+npm run dist      # build dist/BINDit Setup x.y.z.exe and the portable exe
 ```
-`resources/ahk/AutoHotkeyU64.exe` (AutoHotkey v1.1.36.01, GPL v2, see `license.txt`; source at https://github.com/AutoHotkey/AutoHotkey) is bundled together with `picker.ahk` (window/point picker) and `recorder.ahk` (mouse recorder). Generated engine scripts are written to `%APPDATA%\FlyffBind\engine\`.
+`resources/ahk/AutoHotkeyU64.exe` (AutoHotkey v1.1.36.01, GPL v2, see `license.txt`; source at https://github.com/AutoHotkey/AutoHotkey) is bundled together with `picker.ahk` (window/point picker) and `recorder.ahk` (mouse recorder). Generated engine scripts are written to `%APPDATA%\BINDit\engine\`.

@@ -64,7 +64,7 @@ describe('ahkGenerator', () => {
     expect(s).toContain('Hotkey, % "$NumpadSub", M2_Down, T2')
     expect(s).toContain('SetTimer, M2_Run, 400')
     expect(s).toContain('Hotkey, % "$F12", FB_StartStop')
-    expect(s).toContain('Menu, Tray, Tip, % "FlyffBind - Ankou ""Run"""')
+    expect(s).toContain('Menu, Tray, Tip, % "BINDit - Ankou ""Run"""')
     expect(s).not.toContain('Suspend, On')
     expect(s).toMatchSnapshot()
   })

@@ -3,10 +3,10 @@ import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 type BtnVariant = 'primary' | 'ghost' | 'danger' | 'subtle'
 const VARIANTS: Record<BtnVariant, string> = {
-  primary: 'bg-accent text-black hover:brightness-110',
-  subtle: 'bg-tile text-zinc-100 hover:bg-hover',
-  ghost: 'text-muted hover:text-zinc-100 hover:bg-tile',
-  danger: 'bg-red-500/90 text-white hover:bg-red-500'
+  primary: 'btn-primary bg-accent text-black hover:brightness-110',
+  subtle: 'btn-subtle bg-tile text-zinc-100 hover:bg-hover',
+  ghost: 'btn-ghost text-muted hover:text-zinc-100 hover:bg-tile',
+  danger: 'btn-danger bg-red-500/90 text-white hover:bg-red-500'
 }
 
 export function Button({
@@ -18,7 +18,7 @@ export function Button({
   return (
     <button
       {...props}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-md font-semibold tracking-wide transition disabled:pointer-events-none disabled:opacity-40 ${
+      className={`tap btn inline-flex items-center justify-center gap-1.5 rounded-md font-semibold tracking-wide disabled:pointer-events-none disabled:opacity-40 ${
         size === 'sm' ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-1.5 text-sm'
       } ${VARIANTS[variant]} ${className}`}
     />
@@ -31,7 +31,7 @@ export function IconButton({ title, className = '', ...props }: React.ButtonHTML
       {...props}
       title={title}
       aria-label={title}
-      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted transition hover:bg-hover hover:text-zinc-100 ${className}`}
+      className={`tap icon-btn inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted hover:bg-hover hover:text-zinc-100 ${className}`}
     />
   )
 }
@@ -70,8 +70,8 @@ export function Modal({
     return () => window.removeEventListener('keydown', k)
   }, [onClose])
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-6" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
-      <div className={`w-full ${wide ? 'max-w-3xl' : medium ? 'max-w-xl' : 'max-w-md'} rounded-xl bg-panel shadow-2xl ring-1 ring-line`}>
+    <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-6 backdrop-blur-[2px]" onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}>
+      <div className={`modal-card w-full ${wide ? 'max-w-3xl' : medium ? 'max-w-xl' : 'max-w-md'} rounded-xl bg-panel shadow-2xl ring-1 ring-line`}>
         <header className="flex items-center gap-4 px-6 pt-5">
           <h3 className="text-sm font-bold uppercase tracking-[0.12em]">{title}</h3>
           <div className="flex-1">{header}</div>
@@ -98,9 +98,9 @@ export function Switch({ checked, onChange, title }: { checked: boolean; onChang
         e.stopPropagation()
         onChange(!checked)
       }}
-      className={`relative h-5 w-9 shrink-0 rounded-full transition ${checked ? 'bg-accent' : 'bg-line'}`}
+      className={`switch relative h-5 w-9 shrink-0 rounded-full ${checked ? 'bg-accent' : 'bg-line'}`}
     >
-      <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ${checked ? 'left-[18px]' : 'left-0.5'}`} />
+      <span className={`knob absolute top-0.5 h-4 w-4 rounded-full bg-white ${checked ? 'left-[18px]' : 'left-0.5'}`} />
     </button>
   )
 }
@@ -115,13 +115,13 @@ export function Segmented<T extends string | number | boolean>({
   onChange: (v: T) => void
 }) {
   return (
-    <div className="inline-flex rounded-md bg-tile p-0.5 text-xs">
+    <div className="seg inline-flex rounded-md bg-tile p-0.5 text-xs">
       {options.map((o) => (
         <button
           key={String(o.value)}
           title={o.title}
           onClick={() => onChange(o.value)}
-          className={`rounded px-2.5 py-1 font-semibold transition ${value === o.value ? 'bg-hover text-zinc-100' : 'text-muted hover:text-zinc-200'}`}
+          className={`tap rounded px-2.5 py-1 font-semibold ${value === o.value ? 'on bg-hover text-zinc-100' : 'text-muted hover:text-zinc-200'}`}
         >
           {o.label}
         </button>
@@ -154,7 +154,7 @@ export function Menu({ items, title = 'More' }: { items: MenuItem[]; title?: str
         <MoreHorizontal size={16} />
       </IconButton>
       {open && (
-        <div className="absolute right-0 top-8 z-40 min-w-[180px] rounded-lg bg-tile py-1 shadow-2xl ring-1 ring-line">
+        <div className="menu-pop absolute right-0 top-8 z-40 min-w-[180px] rounded-lg bg-tile py-1 shadow-2xl ring-1 ring-line">
           {items
             .filter((i) => !i.hidden)
             .map((i) => (
@@ -164,9 +164,9 @@ export function Menu({ items, title = 'More' }: { items: MenuItem[]; title?: str
                   setOpen(false)
                   i.onClick()
                 }}
-                className={`flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-sm transition hover:bg-hover ${i.danger ? 'text-red-400' : 'text-zinc-200'}`}
+                className={`group/mi flex w-full items-center gap-2.5 px-3 py-1.5 text-left text-sm transition-colors hover:bg-hover active:bg-line ${i.danger ? 'text-red-400' : 'text-zinc-200'}`}
               >
-                {i.icon && <i.icon size={14} className="shrink-0 opacity-80" />}
+                {i.icon && <i.icon size={14} className="shrink-0 opacity-80 transition-transform duration-300 group-hover/mi:translate-x-0.5 group-hover/mi:scale-110" />}
                 {i.label}
               </button>
             ))}

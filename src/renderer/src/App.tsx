@@ -7,6 +7,7 @@ import { KeyCaptureModal } from './components/KeyCapture'
 import { MacroRow } from './components/MacroRow'
 import { MacroWizard } from './components/MacroWizard'
 import { Sidebar } from './components/Sidebar'
+import { Tour, TourHint, tourPrefs } from './components/Tour'
 import { TypeTiles } from './components/TypeTiles'
 import { WindowsSection } from './components/WindowsSection'
 import { Button, ConfirmModal, Modal, PromptModal, SectionHeader } from './components/ui'
@@ -46,7 +47,25 @@ export default function App() {
   const [modal, setModal] = useState<ModalState | null>(null)
   const [pickingId, setPickingId] = useState<string | null>(null)
   const [toast, setToast] = useState<Toast | null>(null)
+  const [tourOpen, setTourOpen] = useState(false)
+  const [hintOpen, setHintOpen] = useState(false)
   const appPid = useRef(0)
+
+  const startTour = useCallback(() => {
+    setHintOpen(false)
+    setModal(null)
+    setTourOpen(true)
+  }, [])
+  const endTour = useCallback(() => {
+    setTourOpen(false)
+    tourPrefs.setDone()
+  }, [])
+  const dismissHint = useCallback(() => setHintOpen(false), [])
+  const neverHint = useCallback(() => {
+    setHintOpen(false)
+    tourPrefs.setHintOff()
+    setToast({ tone: 'info', text: 'Got it. You can still find “Show me around” at the bottom left.' })
+  }, [])
 
   const profile = drafts.find((p) => p.id === activeId)
   const dirtyIds = useMemo(() => new Set(drafts.filter((d) => saved[d.id] && fingerprint(d) !== fingerprint(saved[d.id])).map((d) => d.id)), [drafts, saved])
@@ -58,6 +77,9 @@ export default function App() {
       setDrafts(r.profiles)
       setSaved(Object.fromEntries(r.profiles.map((p) => [p.id, p])))
       setActiveId(r.activeId)
+      // First launch: guided tour. Later launches: a gentle nudge toward it (unless turned off).
+      if (!tourPrefs.done()) setTimeout(() => setTourOpen(true), 600)
+      else if (!tourPrefs.hintOff()) setTimeout(() => setHintOpen(true), 1600)
     })
     window.api.engineStatus().then(setEngine)
     window.api.appPid().then((p) => (appPid.current = p))
@@ -223,7 +245,7 @@ export default function App() {
       const r = await window.api.pickWindow(w.name)
       if (r.cancelled || !r.pid) return
       if (r.pid === appPid.current) {
-        setToast({ tone: 'warn', text: 'That was FlyffBind itself — click your game window instead.' })
+        setToast({ tone: 'warn', text: 'That was BINDit itself — click your game window instead.' })
         return
       }
       editPersisted(pid, (p) => ({
@@ -259,6 +281,8 @@ export default function App() {
         engine={engine}
         onSelect={select}
         onOpenFolder={() => window.api.openProfilesFolder()}
+        tourAttention={hintOpen}
+        onTour={startTour}
         onNew={() =>
           setModal({
             kind: 'prompt',
@@ -394,7 +418,7 @@ export default function App() {
                   {profile.macros.every((m) => m.collapsed) ? 'Expand all' : 'Collapse all'}
                 </Button>
               )}
-              <Button variant="primary" size="sm" onClick={() => setModal({ kind: 'wizard' })}>
+              <Button data-tour="add-macro" variant="primary" size="sm" onClick={() => setModal({ kind: 'wizard' })}>
                 <Plus size={14} /> Add macro
               </Button>
             </SectionHeader>
@@ -402,16 +426,17 @@ export default function App() {
             {profile.macros.length === 0 ? (
               <button
                 onClick={() => setModal({ kind: 'wizard' })}
-                className="flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line py-10 text-sm text-muted transition hover:border-accent hover:text-accent"
+                className="tap group/new flex w-full flex-col items-center gap-2 rounded-lg border border-dashed border-line py-10 text-sm text-muted hover:border-accent hover:bg-accent/5 hover:text-accent"
               >
-                <Plus size={20} />
+                <Plus size={20} className="transition-transform duration-300 group-hover/new:rotate-90 group-hover/new:scale-125" />
                 Create your first macro
               </button>
             ) : (
               <div className="space-y-2">
-                {profile.macros.map((m) => (
+                {profile.macros.map((m, idx) => (
                   <MacroRow
                     key={m.id}
+                    tourAnchor={idx === 0}
                     macro={m}
                     windows={profile.windows}
                     conflict={m.enabled && hotkeyConflict(m.hotkey, m.id) ? 'Key conflict' : null}
@@ -532,9 +557,12 @@ export default function App() {
         </Modal>
       )}
 
+      {tourOpen && <Tour onClose={endTour} />}
+      {hintOpen && !tourOpen && <TourHint onStart={startTour} onDismiss={dismissHint} onNever={neverHint} />}
+
       {toast && (
         <div
-          className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg px-4 py-2.5 text-sm shadow-2xl ring-1 ${
+          className={`toast fixed bottom-6 left-1/2 z-[90] -translate-x-1/2 rounded-lg px-4 py-2.5 text-sm shadow-2xl ring-1 ${
             toast.tone === 'warn' ? 'bg-amber-950 text-amber-200 ring-amber-500/40' : 'bg-tile text-zinc-100 ring-line'
           }`}
         >

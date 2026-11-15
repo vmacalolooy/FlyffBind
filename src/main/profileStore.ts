@@ -1,20 +1,22 @@
 import { existsSync, promises as fs, watch, type FSWatcher } from 'fs'
 import { basename, dirname, join, resolve } from 'path'
 import { type ExportFile, type GameWindow, type Profile, newProfile, sanitizeProfile, uid } from '../shared/types'
-import { defaultProfileFile, legacyProfilesDir, linksFile, profilesDir, settingsFile } from './paths'
+import { dataDir, defaultProfileFile, legacyProfilesDir, linksFile, oldAppDataDir, oldProfilesDir, profilesDir, settingsFile } from './paths'
 
 /**
  * Storage layout
- *  Documents\FlyffBind\Profiles\<Name>.flyffbind   one file per saved profile (shareable as-is)
- *  %APPDATA%\FlyffBind\default.flyffbind           the scratch "Default" profile
- *  %APPDATA%\FlyffBind\window-links.json           PIDs of linked windows (local to this PC)
- *  %APPDATA%\FlyffBind\settings.json               last selected profile
+ *  Documents\BINDit\Profiles\<Name>.bindit   one file per saved profile (shareable as-is)
+ *  %APPDATA%\BINDit\default.bindit           the scratch "Default" profile
+ *  %APPDATA%\BINDit\window-links.json        PIDs of linked windows (local to this PC)
+ *  %APPDATA%\BINDit\settings.json            last selected profile
  *
- * Every .flyffbind file found in the Profiles folder shows up in the app, including files
- * copied there by hand. The folder is watched so the list stays current.
+ * Every .bindit (or older .flyffbind) file found in the Profiles folder shows up in the app,
+ * including files copied there by hand. The folder is watched so the list stays current.
  */
 
-export const PROFILE_EXT = '.flyffbind'
+export const PROFILE_EXT = '.bindit'
+/** Files the app reads: current .bindit plus .flyffbind from before the rename. */
+export const isProfileFile = (f: string) => /\.(bindit|flyffbind)$/i.test(f)
 export const sortProfiles = (a: Profile, b: Profile) => (a.isDefault ? -1 : b.isDefault ? 1 : a.name.localeCompare(b.name))
 
 type Link = Pick<GameWindow, 'pid' | 'lastTitle' | 'lastProcess'>
@@ -22,6 +24,7 @@ type Links = Record<string, Record<string, Link>>
 interface Settings {
   activeId?: string
   migratedToFolder?: boolean
+  migratedFromFlyffBind?: boolean
 }
 
 /** profile id -> file path, for profiles in the Profiles folder */
@@ -51,8 +54,9 @@ async function writeJson(path: string, data: unknown) {
   await fs.rename(tmp, path)
 }
 
-const toFile = (p: Profile): ExportFile => ({ format: 'flyffbind', version: 1, profile: sanitizeProfile(p, { keepPids: false, newIds: false }) })
-const bodyOf = (raw: any) => (raw?.format === 'flyffbind' ? raw.profile : raw)
+const toFile = (p: Profile): ExportFile => ({ format: 'bindit', version: 1, profile: sanitizeProfile(p, { keepPids: false, newIds: false }) })
+/** Accepts the current wrapper, the pre-rename 'flyffbind' wrapper, or a bare profile. */
+const bodyOf = (raw: any) => (raw?.format === 'bindit' || raw?.format === 'flyffbind' ? raw.profile : raw)
 
 /** "DQ: farm/AOE" -> "DQ- farm-AOE" (safe Windows file name, no extension). */
 export function safeFileName(name: string): string {
@@ -81,7 +85,36 @@ function rememberLinks(p: Profile) {
   links[p.id] = l
 }
 
-/** One-time move of profiles from %APPDATA%\FlyffBind\profiles into the visible Profiles folder. */
+/**
+ * One-time copy from the FlyffBind-era locations (the app was renamed to BINDit):
+ * %APPDATA%\FlyffBind -> %APPDATA%\BINDit and Documents\FlyffBind\Profiles -> Documents\BINDit\Profiles.
+ * Files are copied, never moved or deleted, so the old ones stay as a backup.
+ */
+async function migrateFromFlyffBind() {
+  if (existsSync(settingsFile()) && (await getSettings()).migratedFromFlyffBind) return
+  const old = oldAppDataDir()
+  if (existsSync(old) && old.toLowerCase() !== dataDir().toLowerCase()) {
+    const copy = async (from: string, to: string) => {
+      if (existsSync(join(old, from)) && !existsSync(to)) await fs.copyFile(join(old, from), to).catch(() => {})
+    }
+    await fs.mkdir(dataDir(), { recursive: true })
+    await copy('window-links.json', linksFile())
+    await copy('default.flyffbind', defaultProfileFile())
+    const oldSettings = await readJson<Settings>(join(old, 'settings.json'))
+    if (oldSettings) await patchSettings({ activeId: oldSettings.activeId, migratedToFolder: oldSettings.migratedToFolder })
+  }
+  const oldDir = oldProfilesDir()
+  if (existsSync(oldDir)) {
+    for (const f of await fs.readdir(oldDir)) {
+      if (!/\.flyffbind$/i.test(f)) continue
+      const to = join(profilesDir(), f.replace(/\.flyffbind$/i, PROFILE_EXT))
+      if (!existsSync(to)) await fs.copyFile(join(oldDir, f), to).catch(() => {})
+    }
+  }
+  await patchSettings({ migratedFromFlyffBind: true })
+}
+
+/** One-time move of profiles from %APPDATA%\<app>\profiles into the visible Profiles folder. */
 async function migrateLegacy() {
   const s = await getSettings()
   if (s.migratedToFolder) return
@@ -119,6 +152,7 @@ async function migrateLegacy() {
 export function loadAll(): Promise<{ profiles: Profile[]; activeId: string; folder: string }> {
   return serial(async () => {
     await fs.mkdir(profilesDir(), { recursive: true })
+    await migrateFromFlyffBind()
     links = (await readJson<Links>(linksFile())) ?? {}
     await migrateLegacy()
 
@@ -138,7 +172,7 @@ export function loadAll(): Promise<{ profiles: Profile[]; activeId: string; fold
     index.clear()
     const seen = new Set<string>([def.id])
     const profiles: Profile[] = [applyLinks(def)]
-    const files = (await fs.readdir(profilesDir())).filter((f) => f.toLowerCase().endsWith(PROFILE_EXT)).sort()
+    const files = (await fs.readdir(profilesDir())).filter(isProfileFile).sort()
     for (const f of files) {
       const path = join(profilesDir(), f)
       const raw = await readJson<any>(path)
@@ -224,7 +258,7 @@ export function watchProfiles(onChange: () => void): FSWatcher | null {
   let t: ReturnType<typeof setTimeout> | null = null
   try {
     return watch(profilesDir(), (_e, file) => {
-      if (file && !String(file).toLowerCase().endsWith(PROFILE_EXT)) return
+      if (file && !isProfileFile(String(file))) return
       if (t) clearTimeout(t)
       t = setTimeout(onChange, 400)
     })

@@ -56,7 +56,7 @@ export function KeysEditor({
                     setDrag(null)
                   }}
                   onDragEnd={() => setDrag(null)}
-                  className="kbd group cursor-grab py-1 active:cursor-grabbing"
+                  className="kbd pop group cursor-grab py-1 active:cursor-grabbing"
                   title="Drag to reorder"
                 >
                   {keyLabel(k)}
@@ -71,7 +71,7 @@ export function KeysEditor({
               ))}
               <button
                 onClick={() => onRecordKeys(a.id)}
-                className={`inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition ${
+                className={`tap inline-flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold ${
                   a.keys.length ? 'text-muted hover:text-accent' : 'bg-accent/10 text-accent hover:bg-accent/20'
                 }`}
               >
@@ -91,7 +91,7 @@ export function KeysEditor({
       <button
         disabled={!nextWindow}
         onClick={() => nextWindow && update((x) => ({ ...x, actions: [...x.actions, { id: uid(), windowId: nextWindow.id, keys: [] }] }))}
-        className="mt-1 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-muted hover:text-accent disabled:hover:text-muted"
+        className="tap mt-1 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-muted hover:bg-accent/5 hover:text-accent disabled:hover:text-muted"
       >
         <Plus size={13} /> {nextWindow ? 'Add window' : 'Add a window above first'}
       </button>

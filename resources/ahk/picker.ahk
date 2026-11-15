@@ -1,4 +1,4 @@
-; FlyffBind picker.
+; BINDit picker.
 ; Usage: AutoHotkeyU64.exe picker.ahk window "<Window name>"   -> {"pid":..,"process":..,"title":..}
 ;        AutoHotkeyU64.exe picker.ahk point  "<Step label>"    -> {"x":..,"y":..}
 ; A tooltip follows the cursor; the next left click (swallowed, so nothing in the game is

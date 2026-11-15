@@ -19,7 +19,7 @@ function createWindow() {
     minWidth: 920,
     minHeight: 620,
     backgroundColor: '#000000',
-    title: 'FlyffBind',
+    title: 'BINDit',
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -48,7 +48,7 @@ function createWindow() {
       cancelId: 1,
       title: 'Unsaved changes',
       message: 'You have unsaved changes.',
-      detail: 'Quit FlyffBind and lose them?'
+      detail: 'Quit BINDit and lose them?'
     })
     if (choice === 0) e.preventDefault()
   })
@@ -100,8 +100,8 @@ function registerIpc() {
     const safe = p.name.replace(/[\\/:*?"<>|]/g, '_')
     const r = await dialog.showSaveDialog(win, {
       title: 'Export profile to share',
-      defaultPath: join(app.getPath('desktop'), `${safe}.flyffbind`),
-      filters: [{ name: 'FlyffBind profile', extensions: ['flyffbind'] }]
+      defaultPath: join(app.getPath('desktop'), `${safe}.bindit`),
+      filters: [{ name: 'BINDit profile', extensions: ['bindit'] }]
     })
     if (r.canceled || !r.filePath) return null
     await store.exportTo(p, r.filePath)
@@ -115,7 +115,7 @@ function registerIpc() {
       defaultPath: profilesDir(),
       properties: ['openFile'],
       filters: [
-        { name: 'FlyffBind profile', extensions: ['flyffbind', 'json'] },
+        { name: 'BINDit profile', extensions: ['bindit', 'flyffbind', 'json'] },
         { name: 'All files', extensions: ['*'] }
       ]
     })
@@ -132,7 +132,7 @@ function registerIpc() {
       savedNames.set(p.id, p.name)
       return { profile: p }
     } catch (e: any) {
-      return { error: `That file is not a valid FlyffBind profile (${e?.message ?? e}).` }
+      return { error: `That file is not a valid BINDit profile (${e?.message ?? e}).` }
     }
   })
 

@@ -34,8 +34,8 @@ export function Header({
           <div className="label">{profile.isDefault ? 'Default profile' : 'Profile'}</div>
           <h1 className="mt-1 truncate text-3xl font-bold tracking-wide">{profile.name}</h1>
         </div>
-        {dirty && <span className="mb-1.5 rounded-full bg-amber-400/10 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300">Unsaved changes</span>}
-        <div className="ml-auto flex items-center gap-2 pb-0.5">
+        {dirty && <span className="expand mb-1.5 rounded-full bg-amber-400/10 px-2.5 py-0.5 text-[11px] font-semibold text-amber-300">Unsaved changes</span>}
+        <div data-tour="save" className="ml-auto flex items-center gap-2 pb-0.5">
           {dirty && (
             <Button variant="ghost" onClick={onDiscard} title="Throw away changes since the last save">
               <Undo2 size={14} /> Discard
@@ -50,7 +50,7 @@ export function Header({
 
       {/* Start / stop */}
       <div className="mt-6 flex items-center gap-4 rounded-lg bg-tile px-4 py-3">
-        <span className={`h-2.5 w-2.5 rounded-full ${running ? 'bg-emerald-400 shadow-[0_0_10px] shadow-emerald-400/60' : error ? 'bg-red-500' : 'bg-zinc-600'}`} />
+        <span className={`h-2.5 w-2.5 rounded-full transition-colors duration-300 ${running ? 'live-dot bg-emerald-400' : error ? 'bg-red-500' : 'bg-zinc-600'}`} />
         <div className="min-w-0">
           <div className={`text-sm font-bold uppercase tracking-[0.14em] ${running ? 'text-emerald-400' : error ? 'text-red-400' : 'text-zinc-300'}`}>
             {running ? 'Running' : error ? 'Error' : 'Stopped'}
@@ -59,7 +59,7 @@ export function Header({
             {running ? 'Your macros are live.' : profile.suspendKey ? `Press ${keyLabel(profile.suspendKey)} or Start to turn macros on.` : 'Press Start to turn macros on.'}
           </div>
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div data-tour="startkey" className="ml-auto flex items-center gap-2">
           <span className="label">Start / Stop key</span>
           <button onClick={onSetKey} className="kbd py-1 hover:ring-1 hover:ring-accent" title="Set a key that starts and stops all macros">
             {profile.suspendKey ? keyLabel(profile.suspendKey) : 'Set key'}
@@ -70,7 +70,7 @@ export function Header({
             </IconButton>
           )}
         </div>
-        <Button variant={running ? 'danger' : 'primary'} onClick={onToggleRunning} className="w-28">
+        <Button data-tour="start" variant={running ? 'danger' : 'primary'} onClick={onToggleRunning} className={`run-btn w-28 ${running ? 'running' : ''}`}>
           {running ? <Square size={13} fill="currentColor" /> : <Play size={13} fill="currentColor" />} {running ? 'Stop' : 'Start'}
         </Button>
       </div>

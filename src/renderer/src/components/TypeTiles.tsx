@@ -24,9 +24,9 @@ function Tiles<T>({ tiles, isSelected, onPick }: { tiles: Tile<T>[]; isSelected:
       {tiles.map((t) => {
         const sel = isSelected(t.value)
         return (
-          <button key={t.label} onClick={() => onPick(t.value)} className="group flex flex-col items-center gap-3 text-center">
+          <button key={t.label} onClick={() => onPick(t.value)} className="tile group flex flex-col items-center gap-3 text-center">
             <span
-              className={`flex aspect-[4/3] w-full items-center justify-center rounded-md transition ${
+              className={`tap tile-art flex aspect-[4/3] w-full items-center justify-center rounded-md ${
                 sel ? 'bg-accent/15 text-accent ring-1 ring-accent' : 'bg-tile text-zinc-100 group-hover:bg-hover'
               }`}
             >

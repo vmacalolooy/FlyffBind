@@ -25,10 +25,10 @@ export function WindowsSection({
   windows.forEach((w) => w.pid && pidCount.set(w.pid, (pidCount.get(w.pid) ?? 0) + 1))
 
   return (
-    <section>
+    <section data-tour="windows">
       <SectionHeader title="Windows" count={windows.length} />
       <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
-        {windows.map((w) => {
+        {windows.map((w, i) => {
           const linked = w.pid != null
           const dead = linked && alive[w.pid!] === false
           const dup = linked && (pidCount.get(w.pid!) ?? 0) > 1
@@ -37,9 +37,9 @@ export function WindowsSection({
           const warn = dead ? 'Window closed — link it again' : dup ? 'Shares a PID with another window' : notFirefox ? `Not Firefox (${w.lastProcess})` : null
           const dot = picking ? 'bg-accent animate-pulse' : !linked ? 'bg-zinc-600' : dead ? 'bg-red-500' : warn ? 'bg-amber-400' : 'bg-emerald-400'
           return (
-            <div key={w.id} className="group rounded-lg bg-tile p-3 transition hover:bg-hover/60">
+            <div key={w.id} className="lift group rounded-lg bg-tile p-3 hover:bg-hover/60">
               <div className="flex items-center gap-2">
-                <span className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
+                <span className={`h-2 w-2 shrink-0 rounded-full transition-colors duration-300 ${dot}`} />
                 <span className="flex-1 truncate font-semibold">{w.name}</span>
                 <Menu
                   items={[
@@ -61,10 +61,11 @@ export function WindowsSection({
                 )}
               </div>
               <button
+                data-tour={i === 0 ? 'link' : undefined}
                 onClick={() => onLink(w)}
                 disabled={pickingId !== null}
-                className={`mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold transition disabled:opacity-40 ${
-                  !linked || dead ? 'bg-accent text-black hover:brightness-110' : 'bg-hover text-zinc-300 hover:text-white'
+                className={`tap btn mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md py-1.5 text-xs font-semibold disabled:opacity-40 ${
+                  !linked || dead ? 'btn-primary bg-accent text-black' : 'btn-subtle bg-hover text-zinc-300 hover:text-white'
                 }`}
               >
                 <Crosshair size={13} /> {linked ? 'Re-link' : 'Link'}
@@ -73,10 +74,11 @@ export function WindowsSection({
           )
         })}
         <button
+          data-tour="add-window"
           onClick={onAdd}
-          className="flex min-h-[104px] flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-line text-xs font-semibold text-muted transition hover:border-accent hover:text-accent"
+          className="tap group/add flex min-h-[104px] flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-line text-xs font-semibold text-muted hover:border-accent hover:bg-accent/5 hover:text-accent"
         >
-          <Plus size={18} />
+          <Plus size={18} className="transition-transform duration-300 group-hover/add:rotate-90 group-hover/add:scale-125" />
           Add window
         </button>
       </div>
