@@ -1,7 +1,7 @@
 // In-memory stand-in for the Electron preload API, used only when the renderer is
 // opened in a plain browser (UI preview). The real app always has window.api.
 import type { Api } from '../../preload'
-import { newProfile, uid, type EngineStatus, type MouseStep, type Profile } from '../../shared/types'
+import { newProfile, uid, type EngineStatus, type MouseStep, type Profile, type UpdateStatus } from '../../shared/types'
 
 export function installMockApi() {
   const profiles = new Map<string, Profile>()
@@ -16,6 +16,14 @@ export function installMockApi() {
   }
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
   let nextPid = 14200
+  // Preview only: pretend a newer version is published a moment after start.
+  let update: UpdateStatus = { status: 'idle' }
+  const updateListeners = new Set<(s: UpdateStatus) => void>()
+  const emitUpdate = (s: UpdateStatus) => {
+    update = s
+    updateListeners.forEach((l) => l(s))
+  }
+  setTimeout(() => emitUpdate({ status: 'available', version: '1.3.0' }), 2500)
   const api: Api = {
     loadProfiles: async () => ({ profiles: [...profiles.values()], activeId: d.id, folder: 'Documents\\BINDit\\Profiles' }),
     openProfilesFolder: async () => '',
@@ -50,6 +58,26 @@ export function installMockApi() {
     },
     checkPids: async (pids) => Object.fromEntries(pids.map((p) => [p, true])),
     appPid: async () => 1,
+    appVersion: async () => '1.2.0',
+    updateStatus: async () => update,
+    downloadUpdate: async () => {
+      // simulate a download in the UI preview
+      let p = 0
+      const t = setInterval(() => {
+        p += 20
+        emitUpdate(p >= 100 ? { status: 'ready', version: '1.3.0' } : { status: 'downloading', version: '1.3.0', percent: p })
+        if (p >= 100) clearInterval(t)
+      }, 400)
+      return true
+    },
+    installUpdate: async () => true,
+    openRelease: async () => {},
+    onUpdateStatus: (cb) => {
+      updateListeners.add(cb)
+      return () => {
+        updateListeners.delete(cb)
+      }
+    },
     engineArm: async (p) => {
       if (armed?.id !== p.id) emit({ state: 'stopped', profileId: p.id })
       armed = p

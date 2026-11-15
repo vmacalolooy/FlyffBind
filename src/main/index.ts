@@ -4,6 +4,7 @@ import { type Profile, sanitizeProfile } from '../shared/types'
 import { Engine } from './engine'
 import { profilesDir } from './paths'
 import { checkPids, pickPoint, pickWindow, recordMouse } from './picker'
+import { downloadUpdate, getUpdateState, installUpdate, openReleasePage, setupUpdater } from './updater'
 import * as store from './profileStore'
 
 let win: BrowserWindow | null = null
@@ -20,6 +21,8 @@ function createWindow() {
     minHeight: 620,
     backgroundColor: '#000000',
     title: 'BINDit',
+    // Packaged builds use the icon embedded in the .exe; dev runs need it pointed out.
+    ...(app.isPackaged ? {} : { icon: join(app.getAppPath(), 'build', 'icon.png') }),
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -142,6 +145,12 @@ function registerIpc() {
 
   ipcMain.handle('window:checkPids', (_e, pids: number[]) => checkPids(pids.filter((n) => Number.isInteger(n) && n > 0)))
   ipcMain.handle('app:pid', () => process.pid)
+  ipcMain.handle('app:version', () => app.getVersion())
+
+  ipcMain.handle('update:status', () => getUpdateState())
+  ipcMain.handle('update:download', () => downloadUpdate())
+  ipcMain.handle('update:install', () => installUpdate(() => engine.dispose()))
+  ipcMain.handle('update:openRelease', (_e, version?: string) => openReleasePage(typeof version === 'string' ? version : undefined))
 
   ipcMain.handle('engine:arm', async (_e, p: Profile) => {
     // Re-validate before this becomes AutoHotkey code (keys, names and numbers are all checked).
@@ -168,6 +177,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     registerIpc()
     createWindow()
+    setupUpdater((s) => win?.webContents.send('update:status', s))
     // Files added, changed or removed in the Profiles folder show up in the app right away.
     store.loadAll().then(() =>
       store.watchProfiles(async () => {

@@ -13,7 +13,14 @@ extraResources:
 electronLanguages:
   - en-US
 compression: maximum
+# Where installed copies look for updates (electron-updater reads latest.yml from the latest release).
+publish:
+  - provider: github
+    owner: vmacalolooy
+    repo: BINDit
+    releaseType: release
 win:
+  icon: build/icon.png
   target:
     - nsis
     - portable
@@ -22,5 +29,8 @@ nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   differentialPackage: false
+  # no spaces: GitHub renames them to dots, which would break the link in latest.yml
+  artifactName: BINDit-Setup-${version}.exe
+  shortcutName: BINDit
 portable:
   artifactName: BINDit-${version}-portable.exe

@@ -1,13 +1,15 @@
 import { Plus } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { keyLabel } from '../../shared/keys'
-import { type EngineStatus, type GameWindow, type Macro, type Profile, newProfile, sanitizeProfile, uid } from '../../shared/types'
+import { type EngineStatus, type GameWindow, type Macro, type Profile, type UpdateStatus, newProfile, sanitizeProfile, uid } from '../../shared/types'
 import { Header } from './components/Header'
 import { KeyCaptureModal } from './components/KeyCapture'
 import { MacroRow } from './components/MacroRow'
 import { MacroWizard } from './components/MacroWizard'
 import { Sidebar } from './components/Sidebar'
-import { Tour, TourHint, tourPrefs } from './components/Tour'
+import { Tour, TourHint, tourPrefs, versionPrefs } from './components/Tour'
+import { WhatsNew } from './components/WhatsNew'
+import { compareVersions } from './changelog'
 import { TypeTiles } from './components/TypeTiles'
 import { WindowsSection } from './components/WindowsSection'
 import { Button, ConfirmModal, Modal, PromptModal, SectionHeader } from './components/ui'
@@ -49,6 +51,9 @@ export default function App() {
   const [toast, setToast] = useState<Toast | null>(null)
   const [tourOpen, setTourOpen] = useState(false)
   const [hintOpen, setHintOpen] = useState(false)
+  const [appVersion, setAppVersion] = useState('')
+  const [update, setUpdate] = useState<UpdateStatus>({ status: 'idle' })
+  const [whatsNew, setWhatsNew] = useState<{ from?: string; updated?: boolean } | null>(null)
   const appPid = useRef(0)
 
   const startTour = useCallback(() => {
@@ -73,17 +78,28 @@ export default function App() {
 
   // ---------- load + engine status ----------
   useEffect(() => {
-    window.api.loadProfiles().then((r) => {
+    window.api.updateStatus().then(setUpdate)
+    const offUpdate = window.api.onUpdateStatus(setUpdate)
+    Promise.all([window.api.loadProfiles(), window.api.appVersion()]).then(([r, version]) => {
+      setAppVersion(version)
       setDrafts(r.profiles)
       setSaved(Object.fromEntries(r.profiles.map((p) => [p.id, p])))
       setActiveId(r.activeId)
-      // First launch: guided tour. Later launches: a gentle nudge toward it (unless turned off).
+      // First launch: guided tour. After an update: what's new. Otherwise a gentle nudge
+      // toward the tour (unless turned off).
+      const last = versionPrefs.lastSeen()
+      versionPrefs.setLastSeen(version)
       if (!tourPrefs.done()) setTimeout(() => setTourOpen(true), 600)
+      else if (last !== version && (!last || compareVersions(version, last) > 0)) setTimeout(() => setWhatsNew({ from: last || undefined, updated: true }), 600)
       else if (!tourPrefs.hintOff()) setTimeout(() => setHintOpen(true), 1600)
     })
     window.api.engineStatus().then(setEngine)
     window.api.appPid().then((p) => (appPid.current = p))
-    return window.api.onEngineStatus(setEngine)
+    const offEngine = window.api.onEngineStatus(setEngine)
+    return () => {
+      offEngine()
+      offUpdate()
+    }
   }, [])
 
   // The Profiles folder changed on disk (saved here, another copy of the app, or files copied in).
@@ -283,6 +299,9 @@ export default function App() {
         onOpenFolder={() => window.api.openProfilesFolder()}
         tourAttention={hintOpen}
         onTour={startTour}
+        appVersion={appVersion}
+        update={update}
+        onWhatsNew={() => setWhatsNew({})}
         onNew={() =>
           setModal({
             kind: 'prompt',
@@ -557,6 +576,7 @@ export default function App() {
         </Modal>
       )}
 
+      {whatsNew && appVersion && <WhatsNew version={appVersion} from={whatsNew.from} updated={whatsNew.updated} onClose={() => setWhatsNew(null)} />}
       {tourOpen && <Tour onClose={endTour} />}
       {hintOpen && !tourOpen && <TourHint onStart={startTour} onDismiss={dismissHint} onNever={neverHint} />}
 

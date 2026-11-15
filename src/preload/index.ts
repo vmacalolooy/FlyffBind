@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { EngineStatus, PickResult, PointResult, Profile, RecordResult } from '../shared/types'
+import type { EngineStatus, PickResult, PointResult, Profile, RecordResult, UpdateStatus } from '../shared/types'
 
 const api = {
   loadProfiles: (): Promise<{ profiles: Profile[]; activeId: string; folder: string }> => ipcRenderer.invoke('profiles:load'),
@@ -21,6 +21,18 @@ const api = {
   recordMouse: (): Promise<RecordResult> => ipcRenderer.invoke('mouse:record'),
   checkPids: (pids: number[]): Promise<Record<number, boolean>> => ipcRenderer.invoke('window:checkPids', pids),
   appPid: (): Promise<number> => ipcRenderer.invoke('app:pid'),
+  appVersion: (): Promise<string> => ipcRenderer.invoke('app:version'),
+  updateStatus: (): Promise<UpdateStatus> => ipcRenderer.invoke('update:status'),
+  downloadUpdate: (): Promise<boolean> => ipcRenderer.invoke('update:download'),
+  installUpdate: (): Promise<boolean> => ipcRenderer.invoke('update:install'),
+  openRelease: (version?: string): Promise<void> => ipcRenderer.invoke('update:openRelease', version),
+  onUpdateStatus: (cb: (s: UpdateStatus) => void) => {
+    const fn = (_e: unknown, s: UpdateStatus) => cb(s)
+    ipcRenderer.on('update:status', fn)
+    return (): void => {
+      ipcRenderer.removeListener('update:status', fn)
+    }
+  },
   engineArm: (p: Profile): Promise<EngineStatus> => ipcRenderer.invoke('engine:arm', p),
   engineSetRunning: (on: boolean): Promise<EngineStatus> => ipcRenderer.invoke('engine:setRunning', on),
   engineStatus: (): Promise<EngineStatus> => ipcRenderer.invoke('engine:status'),

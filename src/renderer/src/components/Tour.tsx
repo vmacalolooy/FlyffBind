@@ -378,6 +378,24 @@ const write = (k: string) => {
     /* storage unavailable: the tour just shows again next time */
   }
 }
+const KEY_LAST_VERSION = 'bindit.lastSeenVersion'
+/** Last app version whose patch notes this PC has seen. */
+export const versionPrefs = {
+  lastSeen: () => {
+    try {
+      return localStorage.getItem(KEY_LAST_VERSION) ?? ''
+    } catch {
+      return ''
+    }
+  },
+  setLastSeen: (v: string) => {
+    try {
+      localStorage.setItem(KEY_LAST_VERSION, v)
+    } catch {
+      /* storage unavailable */
+    }
+  }
+}
 export const tourPrefs = {
   done: () => read(KEY_DONE),
   setDone: () => write(KEY_DONE),

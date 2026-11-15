@@ -6,6 +6,8 @@ BINDit was previously called **FlyffBind**. On first launch it copies your old p
 
 New here? Click **Show me around** (bottom left) for a step-by-step guided tour.
 
+**Updates:** the installed version checks GitHub for new releases. When one is out, a card at the bottom left lets you download it and **Restart & update**; nothing downloads until you click. The portable version links to the download page instead. Click **BINDit vX · What's new** at the bottom left for the patch notes.
+
 ## Using it
 1. **Profiles** (left sidebar): **Default** is a scratch space. Click **Save as…** to keep a setup as its own named profile. Named profiles show an amber dot when they have unsaved changes; use **Save** (Ctrl+S) or **Discard**. Each profile's ⋯ menu has rename, duplicate, **Export / share** and delete. Friends load a shared `.bindit` file with **Import** (folder icon).
 2. **Windows**: add one per account (e.g. Templar, Seraph, DPS), click **Link** and then click that Firefox window. Its PID is captured automatically. PIDs change whenever Firefox restarts, so **Re-link** when a tile turns red.
@@ -40,6 +42,7 @@ MIT, see `LICENSE`. The bundled AutoHotkey runtime is GPL v2.
 npm install
 npm run dev       # run the app
 npm test          # AHK generator unit tests
-npm run dist      # build dist/BINDit Setup x.y.z.exe and the portable exe
+npm run dist      # build dist/BINDit-Setup-x.y.z.exe, the portable exe and latest.yml
 ```
+Releasing a new version: bump `version` in `package.json`, add an entry at the top of `src/renderer/src/changelog.ts`, run `npm run dist`, then attach **all three files in `dist/`** (Setup exe, portable exe and `latest.yml`) to a GitHub release tagged `vX.Y.Z`. Installed copies find it through `latest.yml`. The app icon is rendered from the logo font with `node_modules/electron/dist/electron.exe scripts/render-icon.cjs`.
 `resources/ahk/AutoHotkeyU64.exe` (AutoHotkey v1.1.36.01, GPL v2, see `license.txt`; source at https://github.com/AutoHotkey/AutoHotkey) is bundled together with `picker.ahk` (window/point picker) and `recorder.ahk` (mouse recorder). Generated engine scripts are written to `%APPDATA%\BINDit\engine\`.

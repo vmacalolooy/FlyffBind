@@ -1,6 +1,7 @@
 import { Copy, Download, FileDown, FolderOpen, HelpCircle, Pencil, Plus, Trash2 } from 'lucide-react'
-import type { EngineStatus, Profile } from '../../../shared/types'
+import type { EngineStatus, Profile, UpdateStatus } from '../../../shared/types'
 import { IconButton, Menu } from './ui'
+import { UpdateCard } from './UpdateCard'
 import { Wordmark } from './Wordmark'
 
 export function Sidebar({
@@ -9,6 +10,9 @@ export function Sidebar({
   dirtyIds,
   engine,
   tourAttention,
+  appVersion,
+  update,
+  onWhatsNew,
   onSelect,
   onOpenFolder,
   onNew,
@@ -24,6 +28,9 @@ export function Sidebar({
   dirtyIds: Set<string>
   engine: EngineStatus
   tourAttention: boolean
+  appVersion: string
+  update: UpdateStatus
+  onWhatsNew: () => void
   onSelect: (id: string) => void
   onOpenFolder: () => void
   onNew: () => void
@@ -83,7 +90,8 @@ export function Sidebar({
           )
         })}
       </nav>
-      <div className="px-3 pb-4">
+      <div className="px-3 pb-3">
+        <UpdateCard update={update} macrosRunning={engine.state === 'running'} />
         <button
           id="tourBtn"
           onClick={onTour}
@@ -92,6 +100,15 @@ export function Sidebar({
         >
           <HelpCircle size={15} /> Show me around
         </button>
+        {appVersion && (
+          <button
+            onClick={onWhatsNew}
+            title="See what changed in each version"
+            className="mt-1.5 block w-full rounded-md px-3 py-1 text-left text-[11px] text-zinc-500 transition-colors hover:bg-tile/60 hover:text-accent"
+          >
+            BINDit v{appVersion} · What’s new
+          </button>
+        )}
       </div>
     </aside>
   )

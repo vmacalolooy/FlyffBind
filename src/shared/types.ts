@@ -86,6 +86,16 @@ export interface EngineStatus {
   message?: string
 }
 
+/** idle → (checking) → available → downloading → ready; error if a download fails */
+export interface UpdateStatus {
+  status: 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'error'
+  version?: string
+  percent?: number
+  message?: string
+  /** running the portable .exe: updates are downloaded from the release page instead */
+  portable?: boolean
+}
+
 export interface PickResult {
   cancelled?: boolean
   pid?: number

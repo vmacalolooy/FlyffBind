@@ -1,7 +1,7 @@
 {
   "name": "bindit",
   "productName": "BINDit",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Multi-window background macro manager for Flyff Universe",
   "main": "./out/main/index.js",
   "author": "BINDit",
@@ -34,5 +34,8 @@
     "typescript": "5.6.3",
     "vite": "8.3.5",
     "vitest": "5.0.5"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.12"
   }
 }
